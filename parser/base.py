@@ -68,13 +68,12 @@ class VideoInfo:
     """
     视频信息
     """
-
     # 视频播放地址
     video_url: str
 
     # 视频封面地址
     cover_url: str
-
+    duration: str = 0
     # 视频标题
     title: str = ""
 
@@ -86,6 +85,21 @@ class VideoInfo:
 
     # 视频作者信息
     author: VideoAuthor = dataclasses.field(default_factory=VideoAuthor)
+
+    @property
+    def duration_seconds(self) -> float:
+        """视频时长(秒)"""
+        return self.duration / 1000
+
+    @property
+    def duration_formatted(self) -> str:
+        """格式化时长，如 '1:30' 或 '1:05:30'"""
+        seconds = self.duration // 1000
+        m, s = divmod(seconds, 60)
+        h, m = divmod(m, 60)
+        if h > 0:
+            return f"{h}:{m:02d}:{s:02d}"
+        return f"{m}:{s:02d}"
 
 
 class BaseParser(ABC):

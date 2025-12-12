@@ -19,6 +19,30 @@ mcp.mount_http()
 templates = Jinja2Templates(directory="templates")
 
 
+def format_duration(milliseconds: int) -> str:
+    """格式化视频时长，如 '1:30' 或 '1:05:30'"""
+    if not milliseconds:
+        return "0:00"
+    seconds = milliseconds // 1000
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    if h > 0:
+        return f"{h}:{m:02d}:{s:02d}"
+    return f"{m}:{s:02d}"
+
+
+def format_video_info(video_info) -> dict:
+    """格式化视频信息，添加时长相关字段"""
+    data = video_info.__dict__.copy()
+    
+    # 添加时长格式化字段
+    duration = data.get("duration", 0)
+    data["duration_seconds"] = round(duration / 1000, 2) if duration else 0
+    data["duration_formatted"] = format_duration(duration)
+    
+    return data
+
+
 def get_auth_dependency() -> list[Depends]:
     """
     根据环境变量动态返回 Basic Auth 依赖项
@@ -70,7 +94,7 @@ async def share_url_parse(url: str):
 
     try:
         video_info = await parse_video_share_url(video_share_url)
-        return {"code": 200, "msg": "解析成功", "data": video_info.__dict__}
+        return {"code": 200, "msg": "解析成功", "data": format_video_info(video_info)}
     except Exception as err:
         return {
             "code": 500,
@@ -82,7 +106,7 @@ async def share_url_parse(url: str):
 async def video_id_parse(source: VideoSource, video_id: str):
     try:
         video_info = await parse_video_id(source, video_id)
-        return {"code": 200, "msg": "解析成功", "data": video_info.__dict__}
+        return {"code": 200, "msg": "解析成功", "data": format_video_info(video_info)}
     except Exception as err:
         return {
             "code": 500,
@@ -93,4 +117,4 @@ async def video_id_parse(source: VideoSource, video_id: str):
 mcp.setup_server()
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8965)

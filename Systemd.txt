@@ -1,0 +1,32 @@
+[Unit]
+Description=get_video_url Service (managed by uv)
+After=network.target
+
+[Service]
+# 1. 您的项目所在的目录
+WorkingDirectory=/home/www/parse-video-py
+
+# 2. 启动命令 (⚠️重要: 请将 /root/.cargo/bin/uv 替换为您 'which uv' 查到的实际路径)
+ExecStart=/root/.local/bin/uv run main.py
+
+# 3. 崩溃自动重启
+Restart=always
+RestartSec=3
+
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+
+
+sudo vi /etc/systemd/system/get_video_url.service
+
+sudo systemctl daemon-reload
+sudo systemctl start get_video_url
+sudo systemctl enable get_video_url
+
+# 查看状态
+sudo systemctl status get_video_url
+
+# 查看实时日志
+journalctl -u get_video_url -f

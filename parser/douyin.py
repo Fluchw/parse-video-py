@@ -7,7 +7,7 @@ from urllib.parse import parse_qs, urlparse
 import httpx
 
 from .base import BaseParser, ImgInfo, VideoAuthor, VideoInfo
-
+from loguru import logger
 
 class DouYin(BaseParser):
     """
@@ -92,6 +92,7 @@ class DouYin(BaseParser):
                 raise Exception(err_detail_msg)
 
             data = original_video_info["item_list"][0]
+            logger.debug(data)
         else:
             raise Exception("Unknown data structure")
 
@@ -161,6 +162,7 @@ class DouYin(BaseParser):
             cover_url=cover_url,
             title=data.get("desc", ""),
             images=images,
+            duration=data.get("video", {}).get("duration", 0),  # ← 添加这行
             author=VideoAuthor(
                 uid=data.get("author", {}).get("sec_uid", ""),
                 name=data.get("author", {}).get("nickname", ""),
